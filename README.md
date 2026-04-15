@@ -4,9 +4,32 @@ A multi-agent blog writing system built with LangGraph. Takes a topic string and
 
 ## Architecture
 
-```
-START -> router -> [research?] -> planner -> fan_out -> workers (parallel)
-      -> merge -> image_plan -> image_gen -> END
+```mermaid
+graph LR
+    Start([START]) --> Router{Router}
+    
+    Router -->|Research Needed| Research[Research Node<br/><i>Tavily Web Search</i>]
+    Router -->|Closed Book| Planner[Planner]
+    Research --> Planner
+    
+    Planner --> FanOut((Fan Out))
+    
+    FanOut -.-> W1[Worker: Section 1]
+    FanOut -.-> W2[Worker: Section 2]
+    FanOut -.-> WN[Worker: Section N]
+    
+    W1 -.-> Merge[Reducer: Merge]
+    W2 -.-> Merge
+    WN -.-> Merge
+    
+    Merge --> ImagePlan[Image Planner]
+    ImagePlan --> ImageFetch[Image Fetching<br/><i>DuckDuckGo ddgs</i>]
+    ImageFetch --> End([END])
+
+    classDef special fill:#e1f5fe,stroke:#0288d1,stroke-width:2px,color:#000;
+    classDef parallel fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#000;
+    class Router,ImagePlan special;
+    class W1,W2,WN parallel;
 ```
 
 - **Router** classifies topic as `closed_book` / `hybrid` / `open_book`.
