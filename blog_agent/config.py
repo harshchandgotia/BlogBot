@@ -21,11 +21,11 @@ class Settings(BaseSettings):
 
     # LLM
     LLM_MODEL: str = "llama-3.3-70b-versatile"
-    LLM_TEMPERATURE: float = 0.3
+    LLM_TEMPERATURE: float = 0.5
     LLM_MAX_RETRIES: int = 3
 
     # Research
-    MAX_RESEARCH_RESULTS_PER_QUERY: int = 6
+    MAX_RESEARCH_RESULTS_PER_QUERY: int = 10
     MAX_QUERIES: int = 10
 
     # Images

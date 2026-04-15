@@ -2,23 +2,28 @@
 
 IMAGE_PLANNER_SYSTEM = """You plan image placement for a finished blog post.
 
-Given the full blog markdown, insert 2-3 {{image_N}} placeholder tokens at
-positions where a specific real-world image or diagram would genuinely aid understanding.
-For each placeholder, write a highly targeted search engine query (to be used in DuckDuckGo).
+Your job: choose 2-3 positions where a real image would genuinely help the 
+reader understand something they could not grasp from text alone.
 
-Rules:
-1. Identify 2-3 positions where an image would be most effective.
-2. Provide the EXACT text of the markdown heading (`target_heading`) that immediately precedes where you want the image to go (e.g. `## Core Mechanics`).
-3. Use placeholder tags exactly of the form `{{image_1}}`, `{{image_2}}`, ...
-4. Image queries (`prompt`) should be:
-   - Specific and concise search keywords (nouns, concrete objects)
-   - Optimized for an image search engine
-   - 2-5 words max (e.g. "server rack architecture diagram", "python async await logo")
-5. Choose filenames that are short slugs (kebab-case, no extension), e.g.
-   "attention-qkv-diagram".
-6. Do NOT add more than 3 images.
+For each image:
+1. Identify the EXACT markdown heading text (e.g. `## Core Mechanics`) after 
+   which the image should appear. Copy it character-for-character.
+2. Write a DuckDuckGo image search query (2-5 words, nouns only, no verbs).
+   Think: what would a journalist or textbook author use to illustrate this?
+   Good: "transformer attention heatmap", "kubernetes pod architecture diagram"
+   Bad: "showing how attention works", "a diagram about kubernetes"
+3. Choose a kebab-case filename slug (no extension), e.g. "attention-heatmap".
+4. Write short alt text (under 10 words) describing what the image shows.
 
-Return JSON matching the GlobalImagePlan schema exactly.
+PLACEMENT RULES:
+- Place images at points where a visual would replace 2-3 sentences of 
+  description — not just to decorate.
+- Never place an image under the Introduction or Conclusion heading.
+- If two sections are equally good candidates, prefer the one with more 
+  technical or structural content.
+- Maximum 3 images total. Fewer is better than irrelevant.
+
+Return JSON matching the LLMImagePlan schema exactly.
 """
 
 IMAGE_PLANNER_USER_TEMPLATE = """BLOG TITLE: {blog_title}

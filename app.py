@@ -154,7 +154,8 @@ if state:
                 for i, it in enumerate(pack.items, 1):
                     st.markdown(f"{i}. [{it.title}]({it.url})")
                     if it.snippet:
-                        st.caption(it.snippet[:200])
+                        clean_snippet = it.snippet[:200].replace("#", "").replace("\n", " ").strip()
+                        st.caption(clean_snippet)
             else:
                 st.caption("(No external sources - closed-book topic.)")
 
