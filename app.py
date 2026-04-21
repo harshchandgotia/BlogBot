@@ -11,7 +11,7 @@ import streamlit as st
 from blog_agent.config import settings
 from blog_agent.graph import build_graph
 from blog_agent.history import list_runs, save_run, delete_run
-from blog_agent.schemas import AgentState
+from blog_agent.schemas import AgentState, EvidencePack
 
 st.set_page_config(page_title="Blog Bot", page_icon=":memo:", layout="wide")
 
@@ -46,6 +46,9 @@ with st.sidebar:
                 if st.button(label, key=f"hist_{rec.get('timestamp', '')}_{rec.get('topic')}", use_container_width=True):
                     path = rec.get("final_blog_path")
                     if path and Path(path).exists():
+                        # Reconstruct evidence_pack from persisted dict
+                        raw_pack = rec.get("evidence_pack")
+                        evidence_pack = EvidencePack(**raw_pack) if raw_pack else None
                         st.session_state.final_state = {
                             "topic": rec.get("topic"),
                             "timestamp": rec.get("timestamp"),
@@ -53,6 +56,7 @@ with st.sidebar:
                             "decision_log": rec.get("decision_log", []),
                             "plan": None,  # plan object not persisted; we only have summary
                             "plan_summary": rec.get("plan_summary"),
+                            "evidence_pack": evidence_pack,
                         }
                     else:
                         st.warning(f"File missing: {path}")

@@ -9,7 +9,7 @@ from pathlib import Path
 import requests
 from ddgs import DDGS
 from slugify import slugify
-from tenacity import RetryError, retry, stop_after_attempt, wait_exponential
+from tenacity import RetryError, retry, retry_if_not_exception_type, stop_after_attempt, wait_exponential
 
 from blog_agent.config import settings
 from blog_agent.logger import get_logger
@@ -31,12 +31,19 @@ def _fetch_url(url: str) -> bytes | None:
         log.warning("Fetch failed %s: %s", url, e)
         return None
 
-@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=2, min=2, max=30))
+class ZeroResultsError(Exception):
+    pass
+
+@retry(
+    stop=stop_after_attempt(3), 
+    wait=wait_exponential(multiplier=2, min=2, max=30),
+    retry=retry_if_not_exception_type(ZeroResultsError)
+)
 def _search_and_download_image(prompt: str) -> bytes:
     with DDGS() as ddgs:
         results = list(ddgs.images(prompt, max_results=5, safesearch="on"))
         if not results:
-            raise RuntimeError(f"No image results found for: {prompt}")
+            raise ZeroResultsError(f"No image results found for: {prompt}")
             
         for res in results:
             url = res.get("image")
@@ -56,6 +63,9 @@ def _generate_image(spec: ImageSpec) -> Path | None:
         return None
     try:
         png = _search_and_download_image(spec.prompt)
+    except ZeroResultsError as e:
+        log.warning("DDGS semantic zero results for %s: %s", spec.placeholder_tag, e)
+        return None
     except RetryError as e:
         log.warning("DDGS retries exhausted for %s: %s", spec.placeholder_tag, e)
         return None

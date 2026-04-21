@@ -23,7 +23,7 @@ def test_task_valid():
         bullets=["a", "b", "c"],
         target_words=180,
     )
-    assert t.requires_research is False
+    assert t.requires_citation is False
 
 
 def test_task_rejects_too_few_bullets():

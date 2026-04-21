@@ -72,7 +72,7 @@ def worker_node(payload: dict) -> dict:
     plan: Plan = payload["plan"]
     evidence: EvidencePack | None = payload.get("evidence_pack")
     evidence_compact = evidence.compact_context() if evidence else ""
-    log.info("worker: section=%r requires_research=%s", task.title, task.requires_research)
+    log.info("worker: section=%r", task.title)
 
     if USE_MOCK:
         section_md = _mock_section(task)

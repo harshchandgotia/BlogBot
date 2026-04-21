@@ -38,6 +38,8 @@ def _real_decision(topic: str) -> RouterDecision:
     # Safety: if mode says closed_book but queries leaked in, drop them.
     if result.mode == "closed_book":
         result = result.model_copy(update={"needs_research": False, "queries": []})
+    elif result.mode in ("open_book", "hybrid") or len(result.queries) > 0:
+        result = result.model_copy(update={"needs_research": True})
     return result
 
 

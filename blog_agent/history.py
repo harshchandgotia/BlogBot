@@ -20,6 +20,7 @@ def save_run(topic: str, final_state: dict) -> Path:
     path = settings.HISTORY_DIR / f"{slug}_{ts}.json"
 
     plan = final_state.get("plan")
+    evidence_pack = final_state.get("evidence_pack")
     record = {
         "topic": topic,
         "timestamp": ts,
@@ -29,6 +30,7 @@ def save_run(topic: str, final_state: dict) -> Path:
             "task_titles": [t.title for t in plan.tasks] if plan else [],
         },
         "decision_log": final_state.get("decision_log", []),
+        "evidence_pack": evidence_pack.model_dump() if evidence_pack else None,
     }
     path.write_text(json.dumps(record, indent=2), encoding="utf-8")
     log.info("history: saved %s", path)

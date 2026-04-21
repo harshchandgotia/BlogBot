@@ -20,7 +20,6 @@ class Task(BaseModel):
     )
     target_words: int = Field(..., ge=80, le=800)
     tags: list[str] = Field(default_factory=list)
-    requires_research: bool = False
     requires_citation: bool = False
     requires_code: bool = False
 

@@ -16,7 +16,7 @@ Rules:
    - Intro: 150-200 words
    - Body sections: 300-500 words  
    - Conclusion: 150-200 words
-5. Set requires_research=true only if the section genuinely needs external facts.
+5. Set requires_citation=true whenever the section genuinely relies on provided EVIDENCE facts.
 6. Set requires_code=true for sections showing code examples.
 7. Section titles are final headings — clear, no colons-and-subtitles.
 8. No bullet belongs to more than one section. No overlap.
@@ -40,7 +40,6 @@ EXAMPLE PLAN (abbreviated):
         "Preview the three key concepts covered in the post."
       ],
       "target_words": 180,
-      "requires_research": false,
       "requires_citation": false,
       "requires_code": false
     },
@@ -55,8 +54,7 @@ EXAMPLE PLAN (abbreviated):
         "Show how the weighted sum of values produces the output."
       ],
       "target_words": 400,
-      "requires_research": false,
-      "requires_citation": false,
+      "requires_citation": true,
       "requires_code": true
     },
     {
@@ -69,7 +67,6 @@ EXAMPLE PLAN (abbreviated):
         "Suggest one actionable next step for the reader."
       ],
       "target_words": 160,
-      "requires_research": false,
       "requires_citation": false,
       "requires_code": false
     }

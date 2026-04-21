@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import re
 from datetime import datetime, timezone
 
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -59,11 +60,15 @@ def image_plan_node(state: AgentState) -> dict:
     kept = []
     for spec in plan_output.images:
         target = spec.target_heading.strip()
-        if target and target in result_markdown:
+        clean_target = target.lstrip("# \t")
+        if clean_target:
             # Insert right below the target heading
-            parts = result_markdown.split(target, 1)
-            result_markdown = f"{parts[0]}{target}\n\n{spec.placeholder_tag}\n{parts[1]}"
-            kept.append(spec)
+            pattern = re.compile(rf"^(#+\s*{re.escape(clean_target)}.*?)$", flags=re.IGNORECASE | re.MULTILINE)
+            if pattern.search(result_markdown):
+                def repl(m):
+                    return f"{m.group(1)}\n\n{spec.placeholder_tag}"
+                result_markdown = pattern.sub(repl, result_markdown, count=1)
+                kept.append(spec)
             
     if len(kept) != len(plan_output.images):
         log.info("image_plan: dropped %d specs missing target heading", len(plan_output.images) - len(kept))
