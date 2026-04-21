@@ -15,8 +15,8 @@ class Task(BaseModel):
     bullets: list[str] = Field(
         ...,
         description="3-5 concrete sub-points the worker must cover.",
-        min_length=2,
-        max_length=8,
+        min_length=3,
+        max_length=5,
     )
     target_words: int = Field(..., ge=80, le=800)
     tags: list[str] = Field(default_factory=list)
@@ -30,4 +30,4 @@ class Plan(BaseModel):
     tone: str = Field(..., description="e.g. 'technical', 'casual explainer', 'formal whitepaper'.")
     kind: Literal["explainer", "news", "tutorial", "analysis", "listicle"] = "explainer"
     constraints: list[str] = Field(default_factory=list)
-    tasks: list[Task] = Field(..., min_length=3, max_length=12)
+    tasks: list[Task] = Field(..., min_length=5, max_length=9)

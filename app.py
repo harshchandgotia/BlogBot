@@ -20,7 +20,9 @@ st.set_page_config(page_title="Blog Bot", page_icon=":memo:", layout="wide")
 if "final_state" not in st.session_state:
     st.session_state.final_state = None
 if "compiled" not in st.session_state:
-    st.session_state.compiled = build_graph()
+    # Lazy-compiled on first Generate click (H8) so a config/import error
+    # doesn't blank the UI at startup.
+    st.session_state.compiled = None
 
 
 # ---------- sidebar ----------
@@ -81,6 +83,9 @@ if generate and topic.strip():
         progress_placeholder = st.empty()
         final_state: dict | None = None
         try:
+            # Lazy-compile on first use so startup errors surface here, not at import.
+            if st.session_state.compiled is None:
+                st.session_state.compiled = build_graph()
             # stream_mode="values" yields the cumulative state after each super-step.
             # The last emission is the final state - single pass, no re-execution.
             for cum_state in st.session_state.compiled.stream(initial, stream_mode="values"):

@@ -37,7 +37,7 @@ def _mock_plan(topic: str) -> Plan:
                 bullets=[
                     f"Define {topic} in one sentence.",
                     "Name two concrete use cases.",
-                    "Preview the three sections that follow.",
+                    "Preview the sections that follow.",
                 ],
                 target_words=180,
             ),
@@ -48,12 +48,34 @@ def _mock_plan(topic: str) -> Plan:
                 bullets=[
                     "Identify the main components.",
                     "Describe how components interact.",
-                    "Highlight one common pitfall.",
+                    "Highlight the essential data flow.",
                 ],
                 target_words=350,
             ),
             Task(
                 id="s3",
+                title="Worked Example",
+                goal=f"Reader sees {topic} applied to a concrete, realistic scenario.",
+                bullets=[
+                    "Describe a realistic input or scenario.",
+                    "Walk through the steps end-to-end.",
+                    "Point out what the reader should notice.",
+                ],
+                target_words=350,
+            ),
+            Task(
+                id="s4",
+                title="Common Pitfalls",
+                goal=f"Reader avoids the two most common mistakes when using {topic}.",
+                bullets=[
+                    "Name the first common mistake and why it happens.",
+                    "Name the second common mistake and its symptom.",
+                    "State a simple rule to avoid both.",
+                ],
+                target_words=300,
+            ),
+            Task(
+                id="s5",
                 title="Conclusion",
                 goal="Reader walks away with a 3-line summary and one action to try.",
                 bullets=[
@@ -90,10 +112,22 @@ def planner_node(state: AgentState) -> dict:
     evidence_compact = evidence.compact_context() if evidence else ""
     log.info("planner: topic=%r evidence=%d", topic, len(evidence.items) if evidence else 0)
 
-    plan = _mock_plan(topic) if USE_MOCK else _real_plan(topic, evidence_compact)
+    fell_back = False
+    if USE_MOCK:
+        plan = _mock_plan(topic)
+    else:
+        try:
+            plan = _real_plan(topic, evidence_compact)
+        except Exception as e:  # noqa: BLE001
+            log.warning("planner LLM failed (%s) -> falling back to mock plan", e)
+            plan = _mock_plan(topic)
+            fell_back = True
 
     ts = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    suffix = " (LLM failed, used mock)" if fell_back else ""
     return {
         "plan": plan,
-        "decision_log": [f"{ts} planner -> {len(plan.tasks)} tasks ('{plan.blog_title}')"],
+        "decision_log": [
+            f"{ts} planner -> {len(plan.tasks)} tasks ('{plan.blog_title}'){suffix}"
+        ],
     }

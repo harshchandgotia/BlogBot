@@ -47,6 +47,7 @@ def research_node(state: AgentState) -> dict:
         log.info("research: mock or no queries -> empty pack")
         pack = EvidencePack(items=[])
     else:
+        settings.validate_keys(require_tavily=True)
         client = TavilyClient(api_key=settings.TAVILY_API_KEY)
         collected: list[EvidenceItem] = []
         for q in decision.queries[: settings.MAX_QUERIES]:

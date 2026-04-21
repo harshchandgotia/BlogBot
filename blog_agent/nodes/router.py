@@ -35,10 +35,11 @@ def _real_decision(topic: str) -> RouterDecision:
     ]
     result = llm.invoke(messages)
     assert isinstance(result, RouterDecision), "Malformed LLM output"
-    # Safety: if mode says closed_book but queries leaked in, drop them.
+    # Safety: keep the mode/needs_research/queries fields consistent regardless
+    # of what the LLM returned.
     if result.mode == "closed_book":
         result = result.model_copy(update={"needs_research": False, "queries": []})
-    elif result.mode in ("open_book", "hybrid") or len(result.queries) > 0:
+    else:  # open_book or hybrid
         result = result.model_copy(update={"needs_research": True})
     return result
 

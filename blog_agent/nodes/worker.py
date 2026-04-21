@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+from datetime import datetime, timezone
 
 from langchain_core.messages import HumanMessage, SystemMessage
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -74,10 +75,26 @@ def worker_node(payload: dict) -> dict:
     evidence_compact = evidence.compact_context() if evidence else ""
     log.info("worker: section=%r", task.title)
 
+    fell_back = False
     if USE_MOCK:
         section_md = _mock_section(task)
     else:
-        section_md = _real_section(task, topic, plan, evidence_compact)
+        try:
+            section_md = _real_section(task, topic, plan, evidence_compact)
+        except Exception as e:  # noqa: BLE001
+            log.warning(
+                "worker LLM failed for %r (%s) -> falling back to stub",
+                task.title,
+                e,
+            )
+            section_md = _mock_section(task)
+            fell_back = True
 
     tagged = f"<!--section:{task.id}-->\n{section_md}"
-    return {"sections": [tagged]}
+    result: dict = {"sections": [tagged]}
+    if fell_back:
+        ts = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        result["decision_log"] = [
+            f"{ts} worker -> {task.id} {task.title!r} fell back to stub"
+        ]
+    return result

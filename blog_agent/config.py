@@ -40,6 +40,25 @@ class Settings(BaseSettings):
         for d in (self.OUTPUT_DIR, self.IMAGE_DIR, self.HISTORY_DIR):
             d.mkdir(parents=True, exist_ok=True)
 
+    def validate_keys(self, *, require_tavily: bool = False) -> None:
+        """Fail fast with a readable message if required API keys are missing.
+
+        Called at import time (GROQ only) and again in the research node
+        (with require_tavily=True) before any network call.
+        """
+        missing: list[str] = []
+        if not self.GROQ_API_KEY:
+            missing.append("GROQ_API_KEY")
+        if require_tavily and not self.TAVILY_API_KEY:
+            missing.append("TAVILY_API_KEY")
+        if missing:
+            raise RuntimeError(
+                "Missing required API key(s): "
+                + ", ".join(missing)
+                + f". Copy .env.example to .env at {_ROOT} and fill in the values."
+            )
+
 
 settings = Settings()
 settings.ensure_dirs()
+settings.validate_keys(require_tavily=False)

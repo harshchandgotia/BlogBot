@@ -14,17 +14,32 @@ log = get_logger("history")
 
 
 def save_run(topic: str, final_state: dict) -> Path:
-    """Persist a run summary as history/<slug>_<ts>.json."""
-    ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
-    slug = slugify(topic)[:60] or "blog"
-    path = settings.HISTORY_DIR / f"{slug}_{ts}.json"
+    """Persist a run summary as history/<blog-stem>.json.
+
+    The filename stem is derived from the final blog markdown path so the
+    history JSON and the blog `.md` always correlate (H10). Falls back to
+    <slug>_<ts> only if final_blog_path is missing.
+    """
+    blog_path_str = final_state.get("final_blog_path")
+    if blog_path_str:
+        stem = Path(blog_path_str).stem
+        # Timestamp carried inside the record body; try to recover it from
+        # the filename for backwards-compatible display in list_runs().
+        ts_parts = stem.rsplit("_", 1)
+        ts = ts_parts[1] if len(ts_parts) == 2 and "-" in ts_parts[1] else datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+    else:
+        ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+        slug = slugify(topic)[:60] or "blog"
+        stem = f"{slug}_{ts}"
+
+    path = settings.HISTORY_DIR / f"{stem}.json"
 
     plan = final_state.get("plan")
     evidence_pack = final_state.get("evidence_pack")
     record = {
         "topic": topic,
         "timestamp": ts,
-        "final_blog_path": final_state.get("final_blog_path"),
+        "final_blog_path": blog_path_str,
         "plan_summary": {
             "blog_title": plan.blog_title if plan else None,
             "task_titles": [t.title for t in plan.tasks] if plan else [],

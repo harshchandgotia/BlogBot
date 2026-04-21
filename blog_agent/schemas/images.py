@@ -8,7 +8,13 @@ class ImageSpec(BaseModel):
     placeholder_tag: str = Field(..., description="e.g. '{{image_1}}'.")
     target_heading: str = Field(..., description="The exact markdown heading (e.g. '## Introduction') after which this image should be inserted.")
     filename: str = Field(..., description="Slugified filename without extension.")
-    prompt: str = Field(..., description="Detailed Stable-Diffusion-style image generation prompt.")
+    prompt: str = Field(
+        ...,
+        description=(
+            "Short DuckDuckGo image-search query (2-5 noun-heavy words, no verbs, "
+            "no articles). Example: 'transformer attention heatmap'."
+        ),
+    )
     alt_text: str = Field(..., description="Short alt text / caption.")
 
 

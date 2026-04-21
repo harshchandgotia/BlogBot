@@ -63,7 +63,12 @@ def image_plan_node(state: AgentState) -> dict:
         clean_target = target.lstrip("# \t")
         if clean_target:
             # Insert right below the target heading
-            pattern = re.compile(rf"^(#+\s*{re.escape(clean_target)}.*?)$", flags=re.IGNORECASE | re.MULTILINE)
+            # Anchor full line (modulo trailing whitespace) so "Intro" doesn't
+            # partial-match "Introduction" (H7 fix).
+            pattern = re.compile(
+                rf"^(#+\s*{re.escape(clean_target)}\s*)$",
+                flags=re.IGNORECASE | re.MULTILINE,
+            )
             if pattern.search(result_markdown):
                 def repl(m):
                     return f"{m.group(1)}\n\n{spec.placeholder_tag}"

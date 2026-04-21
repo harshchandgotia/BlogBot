@@ -12,5 +12,4 @@ python-dotenv>=1.0
 tenacity>=8.2
 requests>=2.31
 pytest>=8.0
-duckduckgo-search>=6.0
 ddgs>=9.13.1
